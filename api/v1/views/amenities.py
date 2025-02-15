@@ -13,7 +13,7 @@ def get_amenities():
     """
     Gets list of all amenities
     """
-    all_amenities = storage.all((Amenity).values())
+    all_amenities = storage.all(Amenity).values()
     list_of_amenities = []
 
     for amenity in all_amenities:
