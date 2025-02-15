@@ -29,7 +29,7 @@ def retrieve_state(state_id):
     if state:
         return jsonify(state.to_dict())
     else:
-        abort(404)
+        return abort(404)
 
 
 @app_views.route("/states/<state_id>", methods=["DELETE"], strict_slashes=False)
@@ -41,7 +41,7 @@ def delete_state(state_id):
     state = storage.get(State, state_id)
 
     if not state:
-        abort(404)
+        return abort(404)
 
     storage.delete(state)
     storage.save()
@@ -61,10 +61,10 @@ def create_state():
     Returns the new State with the status code 201
     """
     if not request.get_json():
-        abort(400, description="Not a JSON")
+        return abort(400, description="Not a JSON")
 
     if "name" not in request.get_json():
-        abort(400, description="Missing name")
+        return abort(400, description="Missing name")
 
     data = request.get_json()
     instance = State(**data)
@@ -88,10 +88,10 @@ def update_state(state_id):
     state = storage.get(State, state_id)
 
     if not state:
-        abort(404)
+        return abort(404)
 
     if not request.get_json():
-        abort(400, description="Not a JSON")
+        return abort(400, description="Not a JSON")
 
     ignore = ["id", "created_at", "updated_at"]
 
