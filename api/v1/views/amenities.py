@@ -60,15 +60,15 @@ def create_amenity():
     Returns the new amenity with the status code 201
     """
     if not request.get_json():
-        return abort(400, "Not a JSON")
+        abort(400, description="Not a JSON")
 
     if "name" not in request.get_json():
-        return abort(400, description="Missing name")
+        abort(400, description="Missing name")
 
-    amenity_object = request.get_json()
-    created_amenity = Amenity(**amenity_object)
-    created_amenity.save()
-    return jsonify(created_amenity.to_dict()), 201
+    data = request.get_json()
+    instance = Amenity(**data)
+    instance.save()
+    return jsonify(instance.to_dict()), 201
 
 
 @app_views.route("/amenities/<amenity_id>", methods=["PUT"], strict_slashes=False)
@@ -84,20 +84,19 @@ def update_amenity(amenity_id):
     Ignore keys: id, created_at and updated_at
     Returns the Amenity object with the status code 200
     """
-    if request.content_type != "application/json":
-        return abort(400, description="Not a JSON")
+    if not request.get_json():
+        abort(400, description="Not a JSON")
+
+    ignore = ["id", "created_at", "updated_at"]
+
     amenity = storage.get(Amenity, amenity_id)
-    if amenity:
-        if not request.get_json():
-            return abort(400, description="Not a JSON")
 
-        amenity_data = request.get_json()
-        ignore_keys = ["id", "state_id", "created_at", "updated_at"]
+    if not amenity:
+        abort(404)
 
-        for key, value in amenity_data.items():
-            if key not in ignore_keys:
-                setattr(amenity, key, value)
-        storage.save()
-        return jsonify(amenity.to_dict()), 200
-    else:
-        return abort(404)
+    data = request.get_json()
+    for key, value in data.items():
+        if key not in ignore:
+            setattr(amenity, key, value)
+    storage.save()
+    return jsonify(amenity.to_dict()), 200
