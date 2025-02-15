@@ -3,7 +3,7 @@
 Creates new view for State objects that handles
     all default RESTFul API actions
 """
-from flask import jsonify, abort, request
+from flask import jsonify, abort, make_response, request
 from models.state import State
 from models import storage
 from api.v1.views import app_views
@@ -40,12 +40,13 @@ def delete_state(state_id):
     """
     state = storage.get(State, state_id)
 
-    if state:
-        storage.delete(state)
-        storage.save()
-        return jsonify({}), 200
-    else:
+    if not state:
         abort(404)
+
+    storage.delete(state)
+    storage.save()
+
+    return make_response(jsonify({}), 200)
 
 
 @app_views.route("/states", methods=["POST"], strict_slashes=False)
@@ -59,19 +60,16 @@ def create_state():
         raise a 400 error with the message 'Missing name'
     Returns the new State with the status code 201
     """
-    if request.content_type != "application/json":
-        return abort(404, "Not a JSON")
     if not request.get_json():
-        return abort(400, "Not a JSON")
+        abort(400, description="Not a JSON")
 
-    kwargs = request.get_json()
+    if "name" not in request.get_json():
+        abort(400, description="Missing name")
 
-    if "name" not in kwargs:
-        return abort(400, "Missing name")
-
-    state = State(**kwargs)
-    state.save()
-    return jsonify(state.to_dict()), 200
+    data = request.get_json()
+    instance = State(**data)
+    instance.save()
+    return make_response(jsonify(instance.to_dict()), 201)
 
 
 @app_views.route("/states/<state_id>", methods=["PUT"], strict_slashes=False)
@@ -87,20 +85,19 @@ def update_state(state_id):
     Ignore keys: id, created_at and updated_at
     Returns the State object with the status code 200
     """
-    if request.content_type != "application/json":
-        return abort(400, "Not a JSON")
-
     state = storage.get(State, state_id)
-    if state:
-        if not request.get_json():
-            return abort(400, "Not a JSON")
-        data = request.get_json()
-        ignore_keys = ["id", "created_at", "updated_at"]
 
-        for key, value in data.items():
-            if key not in ignore_keys:
-                setattr(state, key, value)
-        state.save()
-        return jsonify(state.to_dict()), 200
-    else:
-        return abort(404)
+    if not state:
+        abort(404)
+
+    if not request.get_json():
+        abort(400, description="Not a JSON")
+
+    ignore = ["id", "created_at", "updated_at"]
+
+    data = request.get_json()
+    for key, value in data.items():
+        if key not in ignore:
+            setattr(state, key, value)
+    storage.save()
+    return make_response(jsonify(state.to_dict()), 200)
