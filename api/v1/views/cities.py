@@ -3,7 +3,7 @@
 Creates new view for City objects that handles
     all default RESTFul API actions
 """
-from flask import jsonify, abort, make_response, request
+from flask import jsonify, abort, request
 from models.state import State
 from models.city import City
 from models import storage
