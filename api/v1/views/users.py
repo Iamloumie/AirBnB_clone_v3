@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Objects that handles all default RestFul API actions for Amenities
+Objects that handles all default RestFul API actions for Users
 """
 from models.user import User
 from models import storage
