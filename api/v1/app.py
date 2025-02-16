@@ -3,15 +3,18 @@
 Created flask app; and registered the blueprint app_views
     to Flask instance app.
 """
-
 from os import getenv
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template
+from flask_cors import CORS
 from models import storage
 from api.v1.views import app_views
+from flasgger import Swagger
 
 
 app = Flask(__name__)
+app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
 app.register_blueprint(app_views)
+cors = CORS(app, resources={r"/*": {"origins": "0.0.0.0"}})
 
 
 @app.teardown_appcontext
@@ -25,6 +28,11 @@ def not_found(error):
     """customized error page in json format"""
     response = {"error": "Not found"}
     return jsonify(response), 404
+
+
+app.config["SWAGGER"] = {"title": "AirBnB clone Restful API", "uiversion": 3}
+
+Swagger(app)
 
 
 if __name__ == "__main__":

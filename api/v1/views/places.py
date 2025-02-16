@@ -7,7 +7,7 @@ from models.user import User
 from models.amenity import Amenity
 from models import storage
 from api.v1.views import app_views
-from flask import abort, jsonify, make_response, request
+from flask import abort, jsonify, request
 
 
 @app_views.route("/cities/<city_id>/places", strict_slashes=False)
@@ -54,7 +54,7 @@ def delete_place(place_id):
     storage.delete(place)
     storage.save()
 
-    return make_response(jsonify({}), 200)
+    return jsonify({}), 200
 
 
 @app_views.route("/cities/<city_id>/places", methods=["POST"], strict_slashes=False)
@@ -96,7 +96,7 @@ def create_place(city_id):
     data["city_id"] = city_id
     instance = Place(**data)
     instance.save()
-    return make_jsonify(instance.to_dict()), 201
+    return jsonify(instance.to_dict()), 201
 
 
 @app_views.route("/places/<place_id>", methods=["PUT"], strict_slashes=False)
